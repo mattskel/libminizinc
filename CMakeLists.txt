@@ -246,6 +246,9 @@ target_link_libraries(solns2out minizinc)
 add_executable(mzn2doc mzn2doc.cpp)
 target_link_libraries(mzn2doc minizinc)
 
+add_executable(mzn2nl mzn2nl.cpp)
+target_link_libraries(mzn2nl minizinc)
+
 INSTALL(TARGETS mzn2fzn solns2out mzn2doc minizinc
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib

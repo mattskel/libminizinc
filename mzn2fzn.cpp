@@ -30,6 +30,8 @@
 #include <minizinc/file_utils.hh>
 #include <minizinc/timer.hh>
 
+#include <minizinc/nlprettyprinter.hh>
+
 using namespace MiniZinc;
 using namespace std;
 
@@ -73,7 +75,9 @@ int main(int argc, char** argv) {
   bool flag_output_fzn_stdout = false;
   bool flag_output_ozn_stdout = false;
   bool flag_instance_check_only = false;
+  bool flag_output_nl = false;
   FlatteningOptions fopts;
+
 
   if (argc < 2)
     goto error;
@@ -143,6 +147,8 @@ int main(int argc, char** argv) {
     } else if (string(argv[i])=="--output-to-stdout" ||
                string(argv[i])=="--output-fzn-to-stdout") {
       flag_output_fzn_stdout = true;
+    } else if (string(argv[i])=="--output-to-nl") {
+        flag_output_nl = true;
     } else if (string(argv[i])=="--output-ozn-to-stdout") {
       flag_output_ozn_stdout = true;
     } else if (string(argv[i])=="-" || string(argv[i])=="--input-from-stdin") {
@@ -296,7 +302,11 @@ int main(int argc, char** argv) {
     }
   }
   if (flag_output_fzn == "") {
-    flag_output_fzn = flag_output_base+".fzn";
+    if (flag_output_nl) {
+      flag_output_fzn = flag_output_base+".nl";
+    } else {
+      flag_output_fzn = flag_output_base+".fzn";
+    }
   }
   if (flag_output_ozn == "") {
     flag_output_ozn = flag_output_base+".ozn";
@@ -448,8 +458,14 @@ int main(int argc, char** argv) {
             if (flag_verbose)
               std::cerr << "Printing FlatZinc ...";
             if (flag_output_fzn_stdout) {
-              Printer p(std::cout,0);
-              p.print(flat);
+              if (flag_output_nl) {
+               // TODO: print nl to stdout
+                NLPrinter p(std::cout);
+                p.print(flat);
+              } else {
+                Printer p(std::cout,0);
+                p.print(flat);
+              }
             } else {
               std::ofstream os;
               os.open(flag_output_fzn.c_str(), ios::out);
@@ -459,8 +475,14 @@ int main(int argc, char** argv) {
                 std::cerr << "I/O error: cannot open fzn output file. " << strerror(errno) << "." << std::endl;
                 exit(EXIT_FAILURE);
               }
-              Printer p(os,0);
-              p.print(flat);
+              if (flag_output_nl) {
+                // TODO: print nl to file
+                NLPrinter p(os);
+                p.print(flat);
+              } else {
+                Printer p(os,0);
+                p.print(flat);
+              }
               os.close();
             }
             if (flag_verbose)
@@ -483,6 +505,8 @@ int main(int argc, char** argv) {
                 Printer p(os,0);
                 p.print(env.output());
                 os.close();
+            
+                  
               }
               if (flag_verbose)
                 std::cerr << " done (" << stoptime(lasttime) << ")" << std::endl;

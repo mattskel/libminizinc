@@ -1091,6 +1091,7 @@ namespace MiniZinc {
     ret mapStringLit(const StringLit& sl) {
       std::ostringstream oss;
       oss << "\"" << Printer::escapeStringLit(sl.v()) << "\"";
+      
       return new StringDocument(oss.str());
 
 
